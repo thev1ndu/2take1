@@ -32,10 +32,10 @@
       async function load() {
         try {
           const res = await fetch("/api/todos");
-          if (!res.ok) throw new Error(res.status);
+          if (!res.ok) throw new Error(`api responded ${res.status}`);
           render(await res.json());
         } catch (err) {
-          hint.textContent = "couldn't reach the api";
+          hint.textContent = `couldn't reach the api (${err.message})`;
         }
       }
 
