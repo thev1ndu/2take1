@@ -4,7 +4,7 @@ metadata:
   name: landing
   namespace: klyde
 spec:
-  replicas: 1
+  replicas: 5
   selector:
     matchLabels: { app: landing }
   template:
