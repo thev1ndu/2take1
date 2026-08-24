@@ -4,7 +4,7 @@ kind: Kustomization
 namespace: klyde
 
 resources:
-  - namespace.yaml
-  - deployment.yaml
-  - service.yaml
-  - ingress.yaml
+  - manifests/namespace.yaml
+  - manifests/deployment.yaml
+  - manifests/service.yaml
+  - manifests/ingress.yaml
