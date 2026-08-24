@@ -14,10 +14,14 @@ spec:
     spec:
       containers:
         - name: mariadb
-          image: yobasystems/alpine-mariadb:latest
+          image: lscr.io/linuxserver/mariadb:latest
           ports:
             - containerPort: 3306
           env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
             - name: MYSQL_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -34,7 +38,7 @@ spec:
                   key: password
           volumeMounts:
             - name: data
-              mountPath: /var/lib/mysql
+              mountPath: /config
           readinessProbe:
             tcpSocket:
               port: 3306
