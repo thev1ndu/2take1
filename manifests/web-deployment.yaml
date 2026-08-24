@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: landing
+  name: web
   namespace: klyde
 spec:
   replicas: 1
   selector:
-    matchLabels: { app: landing }
+    matchLabels: { app: web }
   template:
     metadata:
-      labels: { app: landing }
+      labels: { app: web }
     spec:
       containers:
         - name: nginx
-          image: ghcr.io/thev1ndu/klyde:latest
+          image: ghcr.io/thev1ndu/klyde-web:latest
           ports:
             - containerPort: 80
           resources:

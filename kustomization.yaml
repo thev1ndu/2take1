@@ -5,6 +5,10 @@ namespace: klyde
 
 resources:
   - manifests/namespace.yaml
-  - manifests/deployment.yaml
-  - manifests/service.yaml
+  - manifests/db-statefulset.yaml
+  - manifests/db-service.yaml
+  - manifests/api-deployment.yaml
+  - manifests/api-service.yaml
+  - manifests/web-deployment.yaml
+  - manifests/web-service.yaml
   - manifests/ingress.yaml

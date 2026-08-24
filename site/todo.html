@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1"
+    />
+    <title>/todo — klyde.lol</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <nav class="nav">
+      <a href="/">/</a>
+      <a href="/todo" class="active">/todo</a>
+    </nav>
+
+    <form class="add-form" id="add-form">
+      <input type="text" id="text" placeholder="add a todo" maxlength="500" autocomplete="off" />
+      <button type="submit">add</button>
+    </form>
+
+    <ul class="todos" id="list"></ul>
+    <p class="hint" id="hint"></p>
+
+    <script>
+      const list = document.getElementById("list");
+      const hint = document.getElementById("hint");
+      const form = document.getElementById("add-form");
+      const input = document.getElementById("text");
+
+      async function load() {
+        try {
+          const res = await fetch("/api/todos");
+          if (!res.ok) throw new Error(res.status);
+          render(await res.json());
+        } catch (err) {
+          hint.textContent = "couldn't reach the api";
+        }
+      }
+
+      function render(todos) {
+        list.innerHTML = "";
+        hint.textContent = todos.length ? "" : "nothing here yet";
+        for (const t of todos) {
+          const li = document.createElement("li");
+          li.className = t.done ? "done" : "";
+
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.checked = t.done;
+          checkbox.addEventListener("change", () => toggle(t.id, checkbox.checked));
+
+          const span = document.createElement("span");
+          span.textContent = t.text;
+
+          const del = document.createElement("button");
+          del.textContent = "×";
+          del.className = "del";
+          del.type = "button";
+          del.addEventListener("click", () => remove(t.id));
+
+          li.append(checkbox, span, del);
+          list.append(li);
+        }
+      }
+
+      async function toggle(id, done) {
+        await fetch(`/api/todos/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ done }),
+        });
+        load();
+      }
+
+      async function remove(id) {
+        await fetch(`/api/todos/${id}`, { method: "DELETE" });
+        load();
+      }
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const text = input.value.trim();
+        if (!text) return;
+        await fetch("/api/todos", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text }),
+        });
+        input.value = "";
+        load();
+      });
+
+      load();
+    </script>
+  </body>
+</html>
