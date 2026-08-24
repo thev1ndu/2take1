@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: landing
+  namespace: klyde
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>klyde.lol</title>
+      <style>
+        body {
+          font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+          margin: 0;
+          padding: 2.5rem 2rem;
+        }
+        pre {
+          color: #2453FF;
+          font-size: clamp(6px, 1.8vw, 16px);
+          line-height: 1.2;
+          margin: 0;
+        }
+      </style>
+    </head>
+    <body>
+    <pre>
+    _|    _|
+    _|  _|
+    _|_|
+    _|  _|
+    _|    _|
+
+    _|
+    _|
+    _|
+    _|
+    _|_|_|_|
+
+    _|    _|
+      _|_|
+       _|
+       _|
+       _|
+       
+    _|_|_|
+    _|    _|
+    _|    _|
+    _|    _|
+    _|_|_|
+    
+    _|_|_|_|
+    _|
+    _|_|_|
+    _|
+    _|_|_|_|
+    </pre>
+    <p>(klyde.lol)</p>
+    </body>
+    </html>

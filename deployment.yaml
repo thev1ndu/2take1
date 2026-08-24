@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: landing
+  namespace: klyde
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: landing }
+  template:
+    metadata:
+      labels: { app: landing }
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: html
+              mountPath: /usr/share/nginx/html
+          resources:
+            requests: { memory: "16Mi", cpu: "10m" }
+            limits:   { memory: "64Mi", cpu: "100m" }
+      volumes:
+        - name: html
+          configMap:
+            name: landing

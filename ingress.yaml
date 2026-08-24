@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: landing
+  namespace: klyde
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-klyde
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - klyde.lol
+      secretName: klyde-tls
+  rules:
+    - host: klyde.lol
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: landing
+                port: { number: 80 }
