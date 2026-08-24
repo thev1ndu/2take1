@@ -13,16 +13,9 @@ spec:
     spec:
       containers:
         - name: nginx
-          image: nginx:1.27-alpine
+          image: ghcr.io/thev1ndu/klyde:latest
           ports:
             - containerPort: 80
-          volumeMounts:
-            - name: html
-              mountPath: /usr/share/nginx/html
           resources:
             requests: { memory: "16Mi", cpu: "10m" }
             limits:   { memory: "64Mi", cpu: "100m" }
-      volumes:
-        - name: html
-          configMap:
-            name: landing
