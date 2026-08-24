@@ -11,8 +11,6 @@ import (
 	"github.com/go-sql-driver/mysql"
 )
 
-// schema is applied on every boot. It is idempotent, so the API can own its
-// own table rather than needing a separate migration step.
 const schema = `
 CREATE TABLE IF NOT EXISTS todos (
 	id      BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -41,8 +39,6 @@ func open() (*sql.DB, error) {
 	}
 	db := sql.OpenDB(connector)
 
-	// The pod is capped at a small memory limit and MariaDB's default
-	// max_connections is 151; a handful of pooled connections is plenty.
 	db.SetMaxOpenConns(8)
 	db.SetMaxIdleConns(4)
 	db.SetConnMaxLifetime(time.Hour)
@@ -50,9 +46,6 @@ func open() (*sql.DB, error) {
 	return db, nil
 }
 
-// waitReady blocks until MariaDB answers. On a fresh StatefulSet the database
-// initialises its data directory on first boot, which outlasts the API's own
-// startup, so retry rather than crash-looping.
 func waitReady(ctx context.Context, db *sql.DB) error {
 	const retry = 2 * time.Second
 	for attempt := 1; ; attempt++ {

@@ -15,12 +15,6 @@ spec:
     - host: klyde.lol
       http:
         paths:
-          - path: /api
-            pathType: Prefix
-            backend:
-              service:
-                name: api
-                port: { number: 8080 }
           - path: /
             pathType: Prefix
             backend:

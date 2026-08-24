@@ -14,17 +14,20 @@ spec:
     spec:
       containers:
         - name: mariadb
-          image: mariadb:11
+          image: yobasystems/alpine-mariadb:latest
           ports:
             - containerPort: 3306
           env:
-            - name: MARIADB_RANDOM_ROOT_PASSWORD
-              value: "yes"
-            - name: MARIADB_DATABASE
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: klyde-db-credentials
+                  key: password
+            - name: MYSQL_DATABASE
               value: klyde
-            - name: MARIADB_USER
+            - name: MYSQL_USER
               value: klyde
-            - name: MARIADB_PASSWORD
+            - name: MYSQL_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: klyde-db-credentials
@@ -33,13 +36,13 @@ spec:
             - name: data
               mountPath: /var/lib/mysql
           readinessProbe:
-            exec:
-              command: ["healthcheck.sh", "--connect", "--innodb_initialized"]
+            tcpSocket:
+              port: 3306
             initialDelaySeconds: 10
             periodSeconds: 10
           livenessProbe:
-            exec:
-              command: ["healthcheck.sh", "--connect"]
+            tcpSocket:
+              port: 3306
             initialDelaySeconds: 30
             periodSeconds: 20
           resources:

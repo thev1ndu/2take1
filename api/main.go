@@ -41,8 +41,6 @@ func main() {
 	}
 	defer db.Close()
 
-	// Bound startup so a misconfigured database surfaces as a pod restart
-	// instead of a container that hangs in Running forever.
 	boot, cancelBoot := context.WithTimeout(context.Background(), 3*time.Minute)
 	defer cancelBoot()
 	if err := waitReady(boot, db); err != nil {
@@ -70,8 +68,6 @@ func main() {
 		IdleTimeout:       60 * time.Second,
 	}
 
-	// Traefik keeps routing to the pod for a moment after it goes Terminating,
-	// so drain in-flight requests instead of cutting them off.
 	drained := make(chan struct{})
 	go func() {
 		defer close(drained)
@@ -111,7 +107,6 @@ func (s *server) list(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	// Encode an empty slice rather than nil so the client always sees a JSON array.
 	todos := []todo{}
 	for rows.Next() {
 		var t todo
@@ -165,7 +160,6 @@ func (s *server) update(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	// Pointers so that an omitted field leaves the column untouched.
 	var body struct {
 		Text *string `json:"text"`
 		Done *bool   `json:"done"`
@@ -194,14 +188,12 @@ func (s *server) update(w http.ResponseWriter, r *http.Request) {
 	}
 	args = append(args, id)
 
-	// sets holds only fixed literals; every value travels as a placeholder.
 	res, err := s.db.ExecContext(r.Context(),
 		"UPDATE todos SET "+strings.Join(sets, ", ")+" WHERE id = ?", args...)
 	if err != nil {
 		fail(w, err)
 		return
 	}
-	// RowsAffected is 0 for a no-op write too, so confirm the row exists.
 	if n, err := res.RowsAffected(); err == nil && n == 0 {
 		if _, err := s.byID(r.Context(), id); errors.Is(err, sql.ErrNoRows) {
 			http.Error(w, "no such todo", http.StatusNotFound)
@@ -266,7 +258,6 @@ func cleanText(w http.ResponseWriter, s string) (string, bool) {
 		http.Error(w, "text is required", http.StatusBadRequest)
 		return "", false
 	}
-	// The column is VARCHAR(500), counted in characters, so measure runes.
 	if len([]rune(s)) > maxTextLen {
 		http.Error(w, "text is too long", http.StatusBadRequest)
 		return "", false
@@ -292,7 +283,6 @@ func writeJSON(w http.ResponseWriter, status int, v any) {
 	}
 }
 
-// fail keeps driver detail in the pod logs and out of the response.
 func fail(w http.ResponseWriter, err error) {
 	log.Printf("store: %v", err)
 	http.Error(w, "storage unavailable", http.StatusBadGateway)
