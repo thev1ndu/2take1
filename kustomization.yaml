@@ -14,12 +14,12 @@ resources:
   - manifests/web-deployment.yaml
   - manifests/web-service.yaml
   - manifests/ingress.yaml
-  - tekton/namespace/ci.yaml
-  - tekton/serviceaccount/ci-builder.yaml
-  - tekton/task/image-metadata.yaml
-  - tekton/task/buildkit-build-push.yaml
-  - tekton/pipeline/build-and-push.yaml
-  - tekton/triggertemplate/build-and-push.yaml
-  - tekton/triggerbinding/github-push.yaml
-  - tekton/eventlistener/github-listener.yaml
+  # - tekton/namespace/ci.yaml
+  # - tekton/serviceaccount/ci-builder.yaml
+  # - tekton/task/image-metadata.yaml
+  # - tekton/task/buildkit-build-push.yaml
+  # - tekton/pipeline/build-and-push.yaml
+  # - tekton/triggertemplate/build-and-push.yaml
+  # - tekton/triggerbinding/github-push.yaml
+  # - tekton/eventlistener/github-listener.yaml
   # tekton/pipelinerun/build-and-push-manual.yaml
