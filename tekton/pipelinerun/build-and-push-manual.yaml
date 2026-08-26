@@ -1,0 +1,41 @@
+# NOT part of the ArgoCD-synced kustomization (root kustomization.yaml does
+# not list this file). A PipelineRun is a one-shot execution record, not
+# desired state -- kustomize also can't track generateName (no stable
+# metadata.name), and the real trigger path is the EventListener, which
+# creates its own PipelineRuns from eventlistener/github-listener.yaml.
+#
+# Use this only for a manual/ad-hoc run:
+#   kubectl create -f tekton/pipelinerun/build-and-push-manual.yaml
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  generateName: build-and-push-
+  namespace: ci
+spec:
+  pipelineRef:
+    name: build-and-push
+  taskRunTemplate:
+    serviceAccountName: ci-builder
+  timeouts:
+    pipeline: "45m"
+  params:
+    - name: repo-url
+      value: https://github.com/your-org/your-repo.git
+    - name: revision
+      value: main
+    - name: image-prefix
+      value: ghcr.io/your-org/your-repo
+  workspaces:
+    - name: source
+      volumeClaimTemplate:
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 5Gi
+    - name: dockerconfig
+      secret:
+        secretName: ghcr-creds
+        items:
+          - key: .dockerconfigjson
+            path: config.json # BuildKit expects config.json, not .dockerconfigjson

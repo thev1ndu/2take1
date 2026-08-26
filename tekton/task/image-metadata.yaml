@@ -1,0 +1,54 @@
+# Replacement for docker/metadata-action. Reproduces the two tag rules from
+# the workflow:
+#   type=sha,format=long                    -> sha-<40-char-sha>
+#   type=raw,value=latest,is_default_branch -> latest
+# plus the OCI labels metadata-action would have generated.
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: image-metadata
+  namespace: ci
+spec:
+  params:
+    - name: image
+      type: string
+      description: ghcr.io/<owner>/<repo>-<service>, lowercase
+    - name: commit
+      type: string
+    - name: revision
+      type: string
+      default: main
+    - name: default-branch
+      type: string
+      default: main
+    - name: repo-url
+      type: string
+  results:
+    - name: tags
+      description: Comma-separated full image refs to push.
+      type: string
+    - name: labels
+      description: Space-separated --opt label:k=v args for buildctl.
+      type: string
+  steps:
+    - name: compute
+      image: alpine:3
+      script: |
+        #!/bin/sh
+        set -eu
+        IMAGE="$(params.image)"
+        SHA="$(params.commit)"
+
+        TAGS="${IMAGE}:sha-${SHA}"
+        if [ "$(params.revision)" = "$(params.default-branch)" ]; then
+          TAGS="${TAGS},${IMAGE}:latest"
+        fi
+        printf '%s' "${TAGS}" > "$(results.tags.path)"
+
+        CREATED="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+        printf '%s' \
+          "label:org.opencontainers.image.created=${CREATED} \
+           label:org.opencontainers.image.revision=${SHA} \
+           label:org.opencontainers.image.source=$(params.repo-url) \
+           label:org.opencontainers.image.version=sha-${SHA}" \
+          > "$(results.labels.path)"

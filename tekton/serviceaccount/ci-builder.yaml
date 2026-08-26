@@ -1,0 +1,8 @@
+# Do NOT put ghcr-creds in `secrets:` here. Tekton's legacy creds-init would
+# then also inject it into the git-clone pod. Mount it explicitly as a
+# workspace on the build Task instead (see pipeline/build-and-push.yaml).
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ci-builder
+  namespace: ci

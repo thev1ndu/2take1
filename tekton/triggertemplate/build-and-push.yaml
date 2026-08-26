@@ -1,0 +1,40 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: build-and-push
+  namespace: ci
+spec:
+  params:
+    - name: revision
+    - name: repo-url
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1
+      kind: PipelineRun
+      metadata:
+        generateName: build-and-push-
+      spec:
+        pipelineRef:
+          name: build-and-push
+        taskRunTemplate:
+          serviceAccountName: ci-builder
+        params:
+          - name: repo-url
+            value: $(tt.params.repo-url)
+          - name: revision
+            value: $(tt.params.revision)
+          - name: image-prefix
+            value: ghcr.io/your-org/your-repo
+        workspaces:
+          - name: source
+            volumeClaimTemplate:
+              spec:
+                accessModes: ["ReadWriteOnce"]
+                resources:
+                  requests:
+                    storage: 5Gi
+          - name: dockerconfig
+            secret:
+              secretName: ghcr-creds
+              items:
+                - key: .dockerconfigjson
+                  path: config.json

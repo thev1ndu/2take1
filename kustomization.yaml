@@ -1,7 +1,9 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: klyde
+# No blanket `namespace:` here -- every resource below declares its own
+# namespace in metadata (klyde for the app, ci for Tekton), so kustomize's
+# namespace transformer is intentionally not used to avoid overriding that.
 
 resources:
   - manifests/namespace.yaml
@@ -12,3 +14,12 @@ resources:
   - manifests/web-deployment.yaml
   - manifests/web-service.yaml
   - manifests/ingress.yaml
+  - tekton/namespace/ci.yaml
+  - tekton/serviceaccount/ci-builder.yaml
+  - tekton/task/image-metadata.yaml
+  - tekton/task/buildkit-build-push.yaml
+  - tekton/pipeline/build-and-push.yaml
+  - tekton/triggertemplate/build-and-push.yaml
+  - tekton/triggerbinding/github-push.yaml
+  - tekton/eventlistener/github-listener.yaml
+  # tekton/pipelinerun/build-and-push-manual.yaml

@@ -1,0 +1,84 @@
+# Replacement for setup-buildx + build-push-action.
+#
+# Differences from the Actions version worth knowing:
+#   - cache-from/to type=gha is unavailable outside Actions. Registry cache
+#     against ghcr is the direct substitute; scope=<service> becomes a
+#     separate cache tag per service.
+#   - buildctl pushes multiple refs cheaply via name="a,b" -- BuildKit
+#     accepts a comma-separated name list in a single --output.
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: buildkit-build-push
+  namespace: ci
+spec:
+  params:
+    - name: tags
+      type: string
+      description: Comma-separated full refs.
+    - name: labels
+      type: string
+      default: ""
+    - name: context
+      type: string
+      default: .
+      description: Subdirectory of the workspace, e.g. site or api
+    - name: dockerfile
+      type: string
+      default: Dockerfile
+    - name: cache-ref
+      type: string
+      default: ""
+    - name: builder-image
+      type: string
+      default: moby/buildkit:rootless # pin to a digest you've qualified
+  workspaces:
+    - name: source
+    - name: dockerconfig
+      description: Projected from the ghcr-creds secret.
+  results:
+    - name: IMAGE_DIGEST
+      type: string
+  steps:
+    - name: build-and-push
+      image: $(params.builder-image)
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: DOCKER_CONFIG
+          value: $(workspaces.dockerconfig.path)
+        - name: BUILDKITD_FLAGS
+          value: --oci-worker-no-process-sandbox
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: Unconfined
+      script: |
+        #!/bin/sh
+        set -eu
+        CTX="$(workspaces.source.path)/$(params.context)"
+        DF="${CTX}/$(params.dockerfile)"
+
+        CACHE=""
+        if [ -n "$(params.cache-ref)" ]; then
+          CACHE="--import-cache type=registry,ref=$(params.cache-ref) \
+                 --export-cache type=registry,ref=$(params.cache-ref),mode=max"
+        fi
+
+        LABELS=""
+        for l in $(params.labels); do
+          LABELS="${LABELS} --opt ${l}"
+        done
+
+        # shellcheck disable=SC2086
+        buildctl-daemonless.sh build \
+          --frontend dockerfile.v0 \
+          --local context="${CTX}" \
+          --local dockerfile="$(dirname ${DF})" \
+          --opt filename="$(basename ${DF})" \
+          --output type=image,\"name=$(params.tags)\",push=true \
+          --metadata-file /tmp/meta.json \
+          ${LABELS} ${CACHE}
+
+        sed -n 's/.*"containerimage.digest":[[:space:]]*"\([^"]*\)".*/\1/p' \
+          /tmp/meta.json | tr -d '\n' > "$(results.IMAGE_DIGEST.path)"

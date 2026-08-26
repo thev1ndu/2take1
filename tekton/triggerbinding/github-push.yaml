@@ -1,0 +1,11 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: github-push
+  namespace: ci
+spec:
+  params:
+    - name: revision
+      value: $(body.after)
+    - name: repo-url
+      value: $(body.repository.clone_url)

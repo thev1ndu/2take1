@@ -1,0 +1,42 @@
+# Pipelines has no concept of path filters (on.push.paths) -- this belongs
+# here, as a CEL interceptor over the webhook payload's
+# commits[].modified/added/removed. Mirrors branches:[main].
+apiVersion: triggers.tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: github-listener
+  namespace: ci
+spec:
+  serviceAccountName: ci-builder
+  triggers:
+    - name: push-to-main
+      interceptors:
+        - ref:
+            name: github
+          params:
+            - name: secretRef
+              value:
+                secretName: github-webhook-secret
+                secretKey: secretToken
+            - name: eventTypes
+              value: ["push"]
+        - ref:
+            name: cel
+          params:
+            - name: filter
+              value: >-
+                body.ref == 'refs/heads/main' &&
+                (
+                  body.commits.exists(c,
+                    c.modified.exists(f, f.startsWith('site/') ||
+                                          f.startsWith('api/')) ||
+                    c.added.exists(f,    f.startsWith('site/') ||
+                                          f.startsWith('api/')) ||
+                    c.removed.exists(f,  f.startsWith('site/') ||
+                                          f.startsWith('api/'))
+                  )
+                )
+      bindings:
+        - ref: github-push
+      template:
+        ref: build-and-push

@@ -1,0 +1,95 @@
+# matrix.include is the direct analogue of strategy.matrix.include -- Tekton
+# fans out one TaskRun per entry and runs them in parallel, same as Actions
+# runs one job per entry.
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: build-and-push
+  namespace: ci
+spec:
+  params:
+    - name: repo-url
+      type: string
+    - name: revision
+      type: string
+      default: main
+    - name: image-prefix
+      type: string
+      description: ghcr.io/<owner>/<repo> (lowercase, no service suffix)
+  workspaces:
+    - name: source
+    - name: dockerconfig
+  results:
+    - name: digests
+      value: $(tasks.build.results.IMAGE_DIGEST[*]) # array from the matrix
+  tasks:
+    - name: clone
+      taskRef:
+        resolver: bundles
+        params:
+          - name: bundle
+            value: ghcr.io/tektoncd-catalog/git-clone/bundle:v1.7.0
+          - name: name
+            value: git-clone
+          - name: kind
+            value: task
+      params:
+        - name: url
+          value: $(params.repo-url)
+        - name: revision
+          value: $(params.revision)
+      workspaces:
+        - name: output
+          workspace: source
+
+    # metadata-action, once per service
+    - name: metadata
+      runAfter: [clone]
+      matrix:
+        include:
+          - name: web
+            params:
+              - name: image
+                value: $(params.image-prefix)-web
+          - name: api
+            params:
+              - name: image
+                value: $(params.image-prefix)-api
+      taskRef:
+        name: image-metadata
+      params:
+        - name: commit
+          value: $(tasks.clone.results.commit)
+        - name: revision
+          value: $(params.revision)
+        - name: repo-url
+          value: $(params.repo-url)
+
+    # the strategy.matrix from the workflow
+    - name: build
+      runAfter: [metadata]
+      matrix:
+        include:
+          - name: web
+            params:
+              - name: context
+                value: site
+              - name: tags
+                value: $(params.image-prefix)-web:sha-$(tasks.clone.results.commit)
+              - name: cache-ref
+                value: $(params.image-prefix)-web:buildcache
+          - name: api
+            params:
+              - name: context
+                value: api
+              - name: tags
+                value: $(params.image-prefix)-api:sha-$(tasks.clone.results.commit)
+              - name: cache-ref
+                value: $(params.image-prefix)-api:buildcache
+      taskRef:
+        name: buildkit-build-push
+      workspaces:
+        - name: source
+          workspace: source
+        - name: dockerconfig
+          workspace: dockerconfig
