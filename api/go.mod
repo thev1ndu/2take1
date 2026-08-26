@@ -1,4 +1,4 @@
-module klyde/api
+module 2take1/api
 
 go 1.25
 

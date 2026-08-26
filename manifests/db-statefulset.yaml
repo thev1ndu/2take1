@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: db
-  namespace: klyde
+  namespace: 2take1
 spec:
   serviceName: db
   replicas: 1
@@ -26,16 +26,16 @@ spec:
             - name: MYSQL_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: klyde-db-credentials
+                  name: 2take1-db-credentials
                   key: password
             - name: MYSQL_DATABASE
-              value: klyde
+              value: 2take1
             - name: MYSQL_USER
-              value: klyde
+              value: 2take1
             - name: MYSQL_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: klyde-db-credentials
+                  name: 2take1-db-credentials
                   key: password
           volumeMounts:
             - name: data

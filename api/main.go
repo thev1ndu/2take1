@@ -33,7 +33,7 @@ type server struct {
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lmsgprefix)
-	log.SetPrefix("klyde-api: ")
+	log.SetPrefix("2take1-api: ")
 
 	db, err := open()
 	if err != nil {

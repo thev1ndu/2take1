@@ -24,9 +24,9 @@ func open() (*sql.DB, error) {
 	cfg := mysql.NewConfig()
 	cfg.Net = "tcp"
 	cfg.Addr = env("DB_ADDR", "mysql:3306")
-	cfg.User = env("DB_USER", "klyde")
+	cfg.User = env("DB_USER", "2take1")
 	cfg.Passwd = os.Getenv("DB_PASSWORD")
-	cfg.DBName = env("DB_NAME", "klyde")
+	cfg.DBName = env("DB_NAME", "2take1")
 	cfg.Collation = "utf8mb4_unicode_ci"
 	cfg.ParseTime = true
 	cfg.Timeout = 5 * time.Second

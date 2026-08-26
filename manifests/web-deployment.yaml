@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: web
-  namespace: klyde
+  namespace: 2take1
 spec:
   replicas: 1
   selector:
@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
         - name: nginx
-          image: ghcr.io/thev1ndu/klyde-web:latest
+          image: ghcr.io/thev1ndu/2take1-web:latest
           ports:
             - containerPort: 80
           resources:

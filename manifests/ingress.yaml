@@ -2,17 +2,17 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: landing
-  namespace: klyde
+  namespace: 2take1
   annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-klyde
+    cert-manager.io/cluster-issuer: letsencrypt
 spec:
   ingressClassName: traefik
   tls:
     - hosts:
-        - klyde.lol
-      secretName: klyde-tls
+        - 2take1.nl
+      secretName: 2take1-tls
   rules:
-    - host: klyde.lol
+    - host: 2take1.nl
       http:
         paths:
           - path: /

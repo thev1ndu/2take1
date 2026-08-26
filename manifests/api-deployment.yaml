@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: api
-  namespace: klyde
+  namespace: 2take1
 spec:
   replicas: 1
   selector:
@@ -13,20 +13,20 @@ spec:
     spec:
       containers:
         - name: api
-          image: ghcr.io/thev1ndu/klyde-api:latest
+          image: ghcr.io/thev1ndu/2take1-api:latest
           ports:
             - containerPort: 8080
           env:
             - name: DB_ADDR
               value: "db:3306"
             - name: DB_USER
-              value: klyde
+              value: 2take1
             - name: DB_NAME
-              value: klyde
+              value: 2take1
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: klyde-db-credentials
+                  name: 2take1-db-credentials
                   key: password
           readinessProbe:
             httpGet: { path: /api/healthz, port: 8080 }
