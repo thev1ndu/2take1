@@ -7,4 +7,5 @@ resources:
   - manifests/configmap-v2.yaml
   - manifests/service.yaml
   - manifests/ingress.yaml
-  - manifests/rollout.yaml
+  - manifests/deployment.yaml
+  # - manifests/rollout.yaml  # swap back once plain Deployment is confirmed stable

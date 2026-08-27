@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: 2take1
+  namespace: 2take1
+spec:
+  replicas: 4
+  selector:
+    matchLabels: { app: 2take1 }
+  template:
+    metadata:
+      labels: { app: 2take1 }
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: html
+              mountPath: /usr/share/nginx/html/index.html
+              subPath: index.html
+          resources:
+            requests: { memory: "16Mi", cpu: "10m" }
+            limits: { memory: "64Mi", cpu: "100m" }
+      volumes:
+        - name: html
+          configMap:
+            name: web-html-v1
