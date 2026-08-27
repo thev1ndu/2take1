@@ -11,9 +11,13 @@ resources:
   - manifests/db-service.yaml
   - manifests/api-deployment.yaml
   - manifests/api-service.yaml
-  - manifests/web-deployment.yaml
-  - manifests/web-service.yaml
-  - manifests/ingress.yaml
+  # web-deployment/web-service/ingress are superseded by ../rollouts/ --
+  # the Rollout there now owns serving 2take1.nl. Re-enable these only if
+  # the rollouts/ Application is torn down and this repo goes back to
+  # serving the site via a plain Deployment.
+  # - manifests/web-deployment.yaml
+  # - manifests/web-service.yaml
+  # - manifests/ingress.yaml
   # - tekton/namespace/ci.yaml
   # - tekton/serviceaccount/ci-builder.yaml
   # - tekton/task/image-metadata.yaml

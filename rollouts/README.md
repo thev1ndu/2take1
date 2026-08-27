@@ -1,21 +1,31 @@
 # Argo Rollouts test bed
 
-This folder is a self-contained demo for exercising [Argo Rollouts](https://argo-rollouts.readthedocs.io/)
+This folder exercises [Argo Rollouts](https://argo-rollouts.readthedocs.io/)
 canary deployments. It swaps a `Deployment` for a `Rollout`, and instead of building
 new container images for each version, it serves two versions of a static
 `index.html` from ConfigMaps — so a "release" is just flipping which ConfigMap
 is mounted.
 
+**This now owns `2take1.nl`.** The `Ingress` here claims the same
+host/path/TLS-secret as the repo root's `manifests/ingress.yaml`, so that one
+(and `web-deployment.yaml`/`web-service.yaml`) are commented out of the root
+`kustomization.yaml` in favor of this Rollout serving the real site. Don't
+apply both `kustomization.yaml`s to the same cluster with those lines
+uncommented — you'd get two Ingresses fighting over the same host.
+
 ## Layout
 
 ```
 rollouts/
+  argocd-application.yaml     # registers this folder as an ArgoCD Application
+                               # (apply once, directly, to the argocd namespace)
   kustomization.yaml          # entrypoint: kubectl apply -k rollouts/
   manifests/
     namespace.yaml            # 2take1 namespace
     configmap-v1.yaml         # index.html, green "(v1 / stable)"
     configmap-v2.yaml         # index.html, orange "(v2 / canary)"
     service.yaml              # single Service, routes to whatever pods exist
+    ingress.yaml               # 2take1.nl -> this Service
     rollout.yaml               # the Rollout itself (canary strategy)
 ```
 
@@ -74,14 +84,33 @@ brew install argoproj/tap/kubectl-argo-rollouts
 
 ## 2. Deploy it
 
+Two options — pick one:
+
+**Direct** (no ArgoCD involved):
+
 ```bash
 kubectl apply -k rollouts/
 ```
 
-This creates the namespace, both ConfigMaps, the Service, and the Rollout.
-Since it's a brand-new Rollout (no prior revision), the controller skips
-the canary steps and goes straight to `replicas` pods at v1 — canary steps
-only kick in on *changes* to an existing Rollout.
+**GitOps via ArgoCD** (recommended if ArgoCD is already running in-cluster —
+gives you the sync history + UI controls from section 5):
+
+```bash
+kubectl apply -f rollouts/argocd-application.yaml
+```
+
+This registers an `Application` (`klyde-rollouts`, in the `argocd`
+namespace) pointed at this `rollouts/` path with `automated`/`selfHeal`
+sync — ArgoCD then applies and keeps applying everything below on its own.
+`argocd-application.yaml` is deliberately *not* listed in
+`kustomization.yaml`: it's a one-time bootstrap resource for the `argocd`
+namespace, not part of the app itself.
+
+Either way, this creates the namespace, both ConfigMaps, the Service, the
+Ingress, and the Rollout. Since it's a brand-new Rollout (no prior
+revision), the controller skips the canary steps and goes straight to
+`replicas` pods at v1 — canary steps only kick in on *changes* to an
+existing Rollout.
 
 Check it came up:
 
@@ -159,11 +188,36 @@ curl -s localhost:8080 | grep -E 'v1|v2'
   kubectl argo rollouts undo 2take1 -n 2take1
   ```
 
-## 5. Clean up
+## 5. Controlling it from the ArgoCD UI
+
+If you deployed via `argocd-application.yaml`, the same actions above are
+available from the UI, no extra install needed — ArgoCD ships built-in
+resource support for `argoproj.io/Rollout`. Open the `klyde-rollouts` app,
+click the Rollout resource, and use the **⋮ Actions** menu: `resume`
+(= promote a paused step), `promote-full`, `abort`, `restart`, `retry`.
+Rollout health (`Progressing` / `Paused` / `Degraded` / `Healthy`) shows up
+automatically on the resource tile.
+
+For the fuller visual — the weight bar / step timeline / canary-vs-stable
+ReplicaSet split, matching `kubectl argo rollouts get rollout` — install the
+separate [Argo Rollouts UI extension](https://github.com/argoproj-labs/rollout-extension)
+on `argocd-server`. Without it you still get the Actions menu above, just
+not the diagram.
+
+One caveat: `promote`/`abort` from the UI patches the Rollout's *status*
+live in the cluster, not its *spec* in git. With `selfHeal: true` (set in
+`argocd-application.yaml`), ArgoCD won't fight that — it only reconciles
+spec fields declared in git. But if you ever hand-edit the Rollout's
+*spec* directly in the cluster (bypassing git), self-heal will revert it
+on the next sync.
+
+## 6. Clean up
 
 ```bash
 kubectl delete -k rollouts/
 kubectl delete namespace 2take1
+# if registered with ArgoCD:
+kubectl delete -f rollouts/argocd-application.yaml
 ```
 
 (The namespace delete is belt-and-suspenders in case `kubectl apply -k`

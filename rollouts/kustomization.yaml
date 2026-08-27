@@ -6,4 +6,5 @@ resources:
   - manifests/configmap-v1.yaml
   - manifests/configmap-v2.yaml
   - manifests/service.yaml
+  - manifests/ingress.yaml
   - manifests/rollout.yaml
