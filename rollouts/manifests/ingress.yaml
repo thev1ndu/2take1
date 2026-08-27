@@ -1,15 +1,14 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: 2take1
+  name: web
   namespace: 2take1
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt
 spec:
   ingressClassName: traefik
   tls:
-    - hosts:
-        - 2take1.nl
+    - hosts: [2take1.nl]
       secretName: 2take1-tls
   rules:
     - host: 2take1.nl
@@ -19,5 +18,5 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: 2take1
+                name: web
                 port: { number: 80 }

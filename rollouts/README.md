@@ -162,7 +162,7 @@ times while it's paused mid-rollout — you should get a mix of the green
 "(v1 / stable)" page and the orange "(v2 / canary)" page:
 
 ```bash
-kubectl port-forward -n 2take1 svc/2take1 8080:80
+kubectl port-forward -n 2take1 svc/web 8080:80
 curl -s localhost:8080 | grep -E 'v1|v2'
 ```
 
