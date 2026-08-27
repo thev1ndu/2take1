@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: web-html-v1
+  namespace: 2take1
+data:
+  index.html: |
+    <!doctype html>
+    <html lang="en">
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>2take1 (v1)</title>
+        <style>
+          body { background: #0b0b0b; color: #3ddc84; font-family: monospace; text-align: center; margin-top: 8vh; }
+          pre { font-size: 1rem; line-height: 1.1; }
+          p { letter-spacing: 0.1em; }
+        </style>
+      </head>
+      <body>
+        <pre>
+     ___ _____ __  _  _____ __
+    (_  |_   _/  \| |/ / __/  |
+     / /  | || /\ |   <| _|`7 |
+    |___| |_||_||_|_|\_\___||_|
+        </pre>
+        <p>(v1 / stable)</p>
+      </body>
+    </html>

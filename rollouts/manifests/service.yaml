@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: 2take1
+  namespace: 2take1
+spec:
+  selector: { app: 2take1 }
+  ports:
+    - port: 80
+      targetPort: 80
