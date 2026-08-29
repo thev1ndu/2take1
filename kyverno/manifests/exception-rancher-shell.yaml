@@ -1,0 +1,29 @@
+apiVersion: kyverno.io/v2beta1
+kind: PolicyException
+metadata:
+  name: allow-rancher-shell
+  namespace: kyverno
+spec:
+  exceptions:
+    - policyName: disallow-default-namespace
+      ruleNames:
+        - validate-namespace
+    - policyName: disallow-latest-tag
+      ruleNames:
+        - require-and-validate-image-tag
+    - policyName: require-labels
+      ruleNames:
+        - check-for-labels
+    - policyName: require-requests-limits
+      ruleNames:
+        - validate-resources
+    - policyName: require-pod-probes
+      ruleNames:
+        - validate-probes
+  match:
+    any:
+      - resources:
+          kinds:
+            - Pod
+          names:
+            - "*"
