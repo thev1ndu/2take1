@@ -4,7 +4,6 @@ metadata:
   name: 2take1
   namespace: 2take1
 spec:
-  replicas: 2
   selector:
     matchLabels: { app: 2take1 }
   template:
