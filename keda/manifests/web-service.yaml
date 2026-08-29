@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+  namespace: todo-agent
+  labels:
+    app: web
+    app.kubernetes.io/name: web
+spec:
+  type: ClusterIP
+  selector: { app: web }
+  ports:
+    - port: 80
+      targetPort: 80

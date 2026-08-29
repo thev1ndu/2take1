@@ -1,0 +1,41 @@
+# Valkey (Redis-protocol-compatible, BSD-licensed fork) used as:
+#   - message queue: Stream `agent:tasks`, consumer group `agent-workers`
+#   - pub/sub: `todos:changed`, `chat:<session_id>`
+#   - key-value: hash `todo:priority` (todo id -> priority int)
+# No PVC: this is a demo project and losing the priority hash / in-flight
+# chat messages on a pod restart is an accepted limitation, not a real
+# durability requirement.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: todo-agent
+  labels:
+    app: redis
+    app.kubernetes.io/name: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: redis }
+  template:
+    metadata:
+      labels:
+        app: redis
+        app.kubernetes.io/name: redis
+    spec:
+      containers:
+        - name: redis
+          image: valkey/valkey:8-alpine
+          ports:
+            - containerPort: 6379
+          readinessProbe:
+            tcpSocket: { port: 6379 }
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          livenessProbe:
+            tcpSocket: { port: 6379 }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            requests: { memory: "32Mi", cpu: "20m" }
+            limits: { memory: "128Mi", cpu: "250m" }

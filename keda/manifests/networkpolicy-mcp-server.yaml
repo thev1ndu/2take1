@@ -1,0 +1,34 @@
+# Only agent-worker (the Claude tool-use loop) and websocket-gateway (the
+# read-only list_todos snapshot on WS connect / after a change) may reach
+# mcp-server. Nothing else in the namespace, and nothing outside it, needs
+# to call these tools directly.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: mcp-server-ingress
+  namespace: todo-agent
+  labels:
+    app.kubernetes.io/name: mcp-server
+spec:
+  podSelector:
+    matchLabels:
+      app: mcp-server
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: todo-agent
+          podSelector:
+            matchLabels:
+              app: agent-worker
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: todo-agent
+          podSelector:
+            matchLabels:
+              app: websocket-gateway
+      ports:
+        - protocol: TCP
+          port: 8081

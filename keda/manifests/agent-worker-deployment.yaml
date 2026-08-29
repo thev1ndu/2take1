@@ -1,0 +1,48 @@
+# No `replicas:` field -- once the ScaledObject in scaledobject-agent-worker.yaml
+# exists, KEDA's generated HPA owns this Deployment's replica count
+# (0 when agent:tasks is empty, scaling up on stream lag). Applying this
+# Deployment on its own (no ScaledObject) would default to 1 replica.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-worker
+  namespace: todo-agent
+  labels:
+    app: agent-worker
+    app.kubernetes.io/name: agent-worker
+spec:
+  selector:
+    matchLabels: { app: agent-worker }
+  template:
+    metadata:
+      labels:
+        app: agent-worker
+        app.kubernetes.io/name: agent-worker
+    spec:
+      containers:
+        - name: agent-worker
+          image: ghcr.io/thev1ndu/taskdone-agent-worker:0.1.0
+          env:
+            - name: REDIS_ADDR
+              value: "redis:6379"
+            - name: MCP_SERVER_URL
+              value: "http://mcp-server:8081/mcp"
+            - name: MODEL
+              value: "claude-opus-5"
+            - name: EFFORT
+              value: "medium"
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: anthropic-credentials
+                  key: api-key
+          # No HTTP server in this pod -- confirm actual Redis reachability
+          # instead of a fake always-pass check.
+          livenessProbe:
+            exec:
+              command: ["python", "-c", "import socket; socket.create_connection(('redis', 6379), timeout=3)"]
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          resources:
+            requests: { memory: "64Mi", cpu: "50m" }
+            limits: { memory: "256Mi", cpu: "500m" }

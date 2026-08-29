@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TaskDone</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <nav class="nav">
+      <span class="active">TaskDone — AI-prioritized todos</span>
+    </nav>
+
+    <ul class="todos" id="list"></ul>
+    <p class="hint" id="hint">connecting...</p>
+
+    <form class="add-form" id="add-form">
+      <input type="text" id="text" placeholder="add a todo" maxlength="500" autocomplete="off" />
+      <button type="submit">add</button>
+    </form>
+
+    <div class="chat">
+      <div class="chat-log" id="chat-log"></div>
+      <form class="chat-form" id="chat-form">
+        <input
+          type="text"
+          id="chat-text"
+          placeholder="e.g. 'submit the report by Friday is most urgent'"
+          autocomplete="off"
+        />
+        <button type="submit">ask agent</button>
+      </form>
+    </div>
+
+    <script>
+      const list = document.getElementById("list");
+      const hint = document.getElementById("hint");
+      const addForm = document.getElementById("add-form");
+      const addInput = document.getElementById("text");
+      const chatForm = document.getElementById("chat-form");
+      const chatInput = document.getElementById("chat-text");
+      const chatLog = document.getElementById("chat-log");
+
+      let ws;
+      let latestTodos = [];
+      let pendingReplyEl = null;
+
+      function connect() {
+        ws = new WebSocket(`${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/ws`);
+        ws.onopen = () => (hint.textContent = "");
+        ws.onclose = () => {
+          hint.textContent = "disconnected, retrying...";
+          setTimeout(connect, 2000);
+        };
+        ws.onmessage = (event) => {
+          const msg = JSON.parse(event.data);
+          if (msg.type === "todos") {
+            latestTodos = msg.todos;
+            render(latestTodos);
+          } else if (msg.type === "chat_reply") {
+            if (pendingReplyEl) {
+              pendingReplyEl.textContent = msg.text;
+              pendingReplyEl.className = "chat-line agent";
+              pendingReplyEl = null;
+            } else {
+              appendChat("agent", msg.text);
+            }
+          }
+        };
+      }
+
+      function render(todos) {
+        list.innerHTML = "";
+        hint.textContent = todos.length ? "" : "nothing here yet";
+        for (const t of todos) {
+          const li = document.createElement("li");
+          li.className = t.done ? "done" : "";
+
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.checked = t.done;
+          checkbox.addEventListener("change", () => toggle(t.id, checkbox.checked));
+
+          const span = document.createElement("span");
+          span.textContent = t.text;
+
+          const priority = document.createElement("span");
+          priority.className = "priority";
+          if (t.priority > 0) priority.textContent = `p${t.priority}`;
+
+          const del = document.createElement("button");
+          del.textContent = "×";
+          del.className = "del";
+          del.type = "button";
+          del.addEventListener("click", () => remove(t.id));
+
+          li.append(checkbox, span, priority, del);
+          list.append(li);
+        }
+      }
+
+      function refresh() {
+        if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: "refresh" }));
+      }
+
+      async function toggle(id, done) {
+        await fetch(`/api/todos/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ done }),
+        });
+        refresh();
+      }
+
+      async function remove(id) {
+        await fetch(`/api/todos/${id}`, { method: "DELETE" });
+        refresh();
+      }
+
+      addForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const text = addInput.value.trim();
+        if (!text) return;
+        await fetch("/api/todos", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text }),
+        });
+        addInput.value = "";
+        refresh();
+      });
+
+      function appendChat(who, text) {
+        const p = document.createElement("p");
+        p.className = `chat-line ${who}`;
+        p.textContent = text;
+        chatLog.append(p);
+        chatLog.scrollTop = chatLog.scrollHeight;
+        return p;
+      }
+
+      chatForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const text = chatInput.value.trim();
+        if (!text || !ws || ws.readyState !== WebSocket.OPEN) return;
+        appendChat("you", text);
+        pendingReplyEl = appendChat("agent thinking", "thinking...");
+        ws.send(JSON.stringify({ type: "chat", text }));
+        chatInput.value = "";
+      });
+
+      connect();
+    </script>
+  </body>
+</html>

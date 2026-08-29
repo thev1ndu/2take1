@@ -1,0 +1,32 @@
+# One-shot Job: creates the `agent:tasks` Redis Stream + `agent-workers`
+# consumer group before anything reads from it. Needed because
+# agent-worker runs at minReplicaCount: 0 -- nothing would otherwise call
+# XGROUP CREATE, and KEDA's redis-streams scaler needs the group to exist
+# to read consumer lag. Idempotent (XGROUP CREATE ... || true), safe to
+# re-run on every `kubectl apply -k`.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: init-agent-stream
+  namespace: todo-agent
+spec:
+  backoffLimit: 6
+  template:
+    metadata:
+      labels:
+        app: init-agent-stream
+        app.kubernetes.io/name: init-agent-stream
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: init-agent-stream
+          image: valkey/valkey:8-alpine
+          command:
+            - sh
+            - -c
+            - |
+              until valkey-cli -h redis PING; do sleep 2; done
+              valkey-cli -h redis XGROUP CREATE agent:tasks agent-workers 0 MKSTREAM || true
+          resources:
+            requests: { memory: "16Mi", cpu: "10m" }
+            limits: { memory: "64Mi", cpu: "100m" }

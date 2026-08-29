@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: websocket-gateway
+  namespace: todo-agent
+  labels:
+    app: websocket-gateway
+    app.kubernetes.io/name: websocket-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: websocket-gateway }
+  template:
+    metadata:
+      labels:
+        app: websocket-gateway
+        app.kubernetes.io/name: websocket-gateway
+    spec:
+      containers:
+        - name: websocket-gateway
+          image: ghcr.io/thev1ndu/taskdone-websocket-gateway:0.1.0
+          ports:
+            - containerPort: 8082
+          env:
+            - name: REDIS_ADDR
+              value: "redis:6379"
+            - name: MCP_SERVER_URL
+              value: "http://mcp-server:8081/mcp"
+          readinessProbe:
+            httpGet: { path: /readyz, port: 8082 }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /healthz, port: 8082 }
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            requests: { memory: "32Mi", cpu: "20m" }
+            limits: { memory: "128Mi", cpu: "250m" }

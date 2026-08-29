@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: websocket-gateway
+  namespace: todo-agent
+  labels:
+    app: websocket-gateway
+    app.kubernetes.io/name: websocket-gateway
+spec:
+  type: ClusterIP
+  selector: { app: websocket-gateway }
+  ports:
+    - port: 8082
+      targetPort: 8082

@@ -1,0 +1,25 @@
+# The actual KEDA payoff of this project: agent-worker calls a paid LLM API
+# per invocation and has zero reason to sit warm. `lagCount` (stream length
+# minus the consumer group's last-delivered offset) reflects backlog even
+# with zero consumers running, which is what makes scaling from 0 work --
+# `pendingEntriesCount` would stay at 0 forever with nothing reading.
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: agent-worker
+  namespace: todo-agent
+spec:
+  scaleTargetRef:
+    name: agent-worker
+  minReplicaCount: 0
+  maxReplicaCount: 3
+  cooldownPeriod: 60
+  pollingInterval: 5
+  triggers:
+    - type: redis-streams
+      metadata:
+        address: redis.todo-agent.svc.cluster.local:6379
+        stream: "agent:tasks"
+        consumerGroup: "agent-workers"
+        lagCount: "1"
+        activationLagCount: "0"

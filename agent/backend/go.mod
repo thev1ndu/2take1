@@ -1,4 +1,4 @@
-module klyde/agent/backend
+module 2take1/agent/backend
 
 go 1.25.0
 

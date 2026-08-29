@@ -1,0 +1,28 @@
+# TaskDone's own host -- deliberately not the 2take1.nl root path, which
+# rollouts/ingress.yaml already owns (see rollouts/README.md). A distinct
+# host means no collision, so this can stay applied by default instead of
+# living behind a manual port-forward step.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: taskdone
+  namespace: todo-agent
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+    traefik.ingress.kubernetes.io/router.middlewares: auth-oauth-errors@kubernetescrd,auth-oauth-auth@kubernetescrd
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - taskdone.2take1.nl
+      secretName: taskdone-tls
+  rules:
+    - host: taskdone.2take1.nl
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: web
+                port: { number: 80 }

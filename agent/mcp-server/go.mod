@@ -1,4 +1,4 @@
-module klyde/agent/mcp-server
+module 2take1/agent/mcp-server
 
 go 1.25
 
