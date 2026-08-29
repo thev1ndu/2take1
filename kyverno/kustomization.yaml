@@ -4,7 +4,7 @@ kind: Kustomization
 resources:
   - manifests/check-deprecated-apis.yaml
   - manifests/disallow-default-namespace.yaml
-  # - manifests/disallow-latest-tag.yaml
+  - manifests/disallow-latest-tag.yaml
   - manifests/require-labels.yaml
   - manifests/require-pod-requests-limits.yaml
   - manifests/require-probes.yaml
