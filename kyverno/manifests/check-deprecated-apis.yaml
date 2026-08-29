@@ -16,7 +16,7 @@ metadata:
       ConfigMap to remove filters. PodSecurityPolicy is removed in v1.25
       so therefore the validate-v1-25-removals rule may not completely work on 1.25+.
 spec:
-  validationFailureAction: Audit
+  validationFailureAction: Enforce
   background: false
   rules:
     - name: validate-v1-25-removals
