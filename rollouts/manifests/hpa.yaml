@@ -4,7 +4,7 @@ metadata:
   name: 2take1
   namespace: 2take1
 spec:
-  maxReplicas: 5
+  maxReplicas: 10
   metrics:
     - resource:
         name: cpu
