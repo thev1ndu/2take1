@@ -9,6 +9,14 @@ kind: Job
 metadata:
   name: init-agent-stream
   namespace: todo-agent
+  annotations:
+    # Under ArgoCD (argocd-application.yaml), run this before every other
+    # resource is synced -- the consumer group must exist before KEDA's
+    # ScaledObject tries to read its lag -- and replace it cleanly on each
+    # sync instead of accumulating a new Job every time this manifest
+    # changes. No-op outside ArgoCD (plain `kubectl apply -k` ignores it).
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
 spec:
   backoffLimit: 6
   template:
