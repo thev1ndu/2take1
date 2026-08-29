@@ -20,7 +20,7 @@ metadata:
       or startupProbe defined.
 spec:
   validationFailureAction: Audit
-  background: true
+  background: false
   rules:
     - name: validate-probes
       match:
@@ -30,7 +30,6 @@ spec:
                 - Pod
               operations:
                 - CREATE
-                - UPDATE
       validate:
         cel:
           expressions:

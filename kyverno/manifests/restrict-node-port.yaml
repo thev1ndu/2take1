@@ -17,7 +17,7 @@ metadata:
       do not use the `NodePort` type.
 spec:
   validationFailureAction: Audit
-  background: true
+  background: false
   rules:
     - name: validate-nodeport
       match:
@@ -27,7 +27,6 @@ spec:
                 - Service
               operations:
                 - CREATE
-                - UPDATE
       validate:
         cel:
           expressions:

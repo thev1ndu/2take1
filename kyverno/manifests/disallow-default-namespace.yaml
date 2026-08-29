@@ -20,7 +20,7 @@ metadata:
       object and not at the Pod template level.
 spec:
   validationFailureAction: Audit
-  background: true
+  background: false
   rules:
     - name: validate-namespace
       match:
@@ -30,7 +30,6 @@ spec:
                 - Pod
               operations:
                 - CREATE
-                - UPDATE
       validate:
         cel:
           expressions:
@@ -47,7 +46,6 @@ spec:
                 - StatefulSet
               operations:
                 - CREATE
-                - UPDATE
       validate:
         cel:
           expressions:

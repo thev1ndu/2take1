@@ -17,7 +17,7 @@ metadata:
       so therefore the validate-v1-25-removals rule may not completely work on 1.25+.
 spec:
   validationFailureAction: Audit
-  background: true
+  background: false
   rules:
     - name: validate-v1-25-removals
       match:
@@ -31,6 +31,8 @@ spec:
                 - policy/*/PodDisruptionBudget
                 - policy/*/PodSecurityPolicy
                 - node.k8s.io/*/RuntimeClass
+              operations:
+                - CREATE
       celPreconditions:
         - name: "allowed-api-versions"
           expression: "object.apiVersion in ['batch/v1beta1', 'discovery.k8s.io/v1beta1', 'events.k8s.io/v1beta1', 'policy/v1beta1', 'node.k8s.io/v1beta1']"
@@ -49,6 +51,8 @@ spec:
                 - flowcontrol.apiserver.k8s.io/*/FlowSchema
                 - flowcontrol.apiserver.k8s.io/*/PriorityLevelConfiguration
                 - autoscaling/*/HorizontalPodAutoscaler
+              operations:
+                - CREATE
       celPreconditions:
         - name: "allowed-api-versions"
           expression: "object.apiVersion in ['flowcontrol.apiserver.k8s.io/v1beta1', 'autoscaling/v2beta2']"
@@ -65,6 +69,8 @@ spec:
           - resources:
               kinds:
                 - storage.k8s.io/*/CSIStorageCapacity
+              operations:
+                - CREATE
       celPreconditions:
         - name: "allowed-api-versions"
           expression: "object.apiVersion in ['storage.k8s.io/v1beta1']"
@@ -82,6 +88,8 @@ spec:
               kinds:
                 - flowcontrol.apiserver.k8s.io/*/FlowSchema
                 - flowcontrol.apiserver.k8s.io/*/PriorityLevelConfiguration
+              operations:
+                - CREATE
       celPreconditions:
         - name: "object.apiVersion"
           expression: "object.apiVersion in ['flowcontrol.apiserver.k8s.io/v1beta2']"
@@ -99,6 +107,8 @@ spec:
               kinds:
                 - flowcontrol.apiserver.k8s.io/*/FlowSchema
                 - flowcontrol.apiserver.k8s.io/*/PriorityLevelConfiguration
+              operations:
+                - CREATE
       celPreconditions:
         - name: "object.apiVersion"
           expression: "object.apiVersion in ['flowcontrol.apiserver.k8s.io/v1beta3']"
