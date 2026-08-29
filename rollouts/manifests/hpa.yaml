@@ -4,7 +4,7 @@ metadata:
   name: 2take1
   namespace: 2take1
 spec:
-  maxReplicas: 2
+  maxReplicas: 5
   metrics:
     - resource:
         name: cpu
@@ -27,4 +27,4 @@ spec:
     scaleUp:
       stabilizationWindowSeconds: 0
     scaleDown:
-      stabilizationWindowSeconds: 300
+      stabilizationWindowSeconds: 60
