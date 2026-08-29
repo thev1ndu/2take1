@@ -3,6 +3,8 @@ kind: Deployment
 metadata:
   name: 2take1
   namespace: 2take1
+annotations:
+  reloader.stakater.com/auto: "true"
 spec:
   selector:
     matchLabels: { app: 2take1 }
