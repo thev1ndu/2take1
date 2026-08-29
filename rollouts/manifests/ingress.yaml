@@ -5,7 +5,7 @@ metadata:
   namespace: 2take1
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt
-    # traefik.ingress.kubernetes.io/router.middlewares: auth-oauth-errors@kubernetescrd,auth-oauth-auth@kubernetescrd
+    traefik.ingress.kubernetes.io/router.middlewares: auth-oauth-errors@kubernetescrd,auth-oauth-auth@kubernetescrd
 spec:
   ingressClassName: traefik
   tls:
