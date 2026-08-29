@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# No blanket `namespace:` here -- every resource below declares its own
+# namespace in metadata (twotakeone), plus two cluster-scoped RBAC objects
+# (ClusterRole/ClusterRoleBinding) that have no namespace at all. Same
+# convention as the root kustomization.yaml: kustomize's namespace
+# transformer is intentionally not used.
+
+resources:
+  - manifests/namespace.yaml
+  - manifests/serviceaccount-mcp.yaml
+  - manifests/clusterrole-mcp-reader.yaml
+  - manifests/clusterrolebinding-mcp-reader.yaml
+  - manifests/mcp-deployment.yaml
+  - manifests/mcp-service.yaml
+  - manifests/networkpolicy-mcp.yaml
+  - manifests/backend-pvc.yaml
+  - manifests/backend-deployment.yaml
+  - manifests/backend-service.yaml
+  # web-*/ingress/secrets land in later milestones (see PLAN.md
+  # "Build order") -- not scaffolded yet.

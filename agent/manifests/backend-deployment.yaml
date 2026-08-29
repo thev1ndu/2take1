@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: twotakeone
+  labels:
+    app: backend
+    app.kubernetes.io/name: backend
+spec:
+  # bbolt is single-writer -- more than 1 replica would corrupt/contend on
+  # the shared PVC file. Accepted limitation, see agent/PLAN.md "Known
+  # limitations" (Redis is the scoped fallback if this needs to scale).
+  replicas: 1
+  selector:
+    matchLabels: { app: backend }
+  template:
+    metadata:
+      labels:
+        app: backend
+        app.kubernetes.io/name: backend
+    spec:
+      # No serviceAccountName -- this pod gets the namespace's "default"
+      # ServiceAccount with zero bound RBAC. It must never talk to the
+      # Kubernetes API directly; cluster reads go through mcp-server over
+      # HTTP (milestone 4), which is the only pod carrying cluster
+      # permissions.
+      securityContext:
+        fsGroup: 65534
+      containers:
+        - name: backend
+          image: ghcr.io/thev1ndu/klyde-backend:0.1.0
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DB_PATH
+              value: /data/klyde.db
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          readinessProbe:
+            httpGet: { path: /api/readyz, port: 8080 }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /api/healthz, port: 8080 }
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            requests: { memory: "32Mi", cpu: "20m" }
+            limits: { memory: "128Mi", cpu: "250m" }
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: backend-data

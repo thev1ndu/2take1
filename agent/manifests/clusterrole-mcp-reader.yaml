@@ -1,0 +1,30 @@
+# Cluster-wide, read-only. Deliberately excludes `secrets` — see agent/PLAN.md
+# "RBAC" section: an LLM-driven agent reading Secret values is an
+# exfiltration risk (prompt injection could ask it to dump a secret into
+# chat). Do not add `secrets` here without also redacting `.data`/
+# `.stringData` in mcp-server before results reach Claude.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: agent-mcp-reader
+  labels:
+    app.kubernetes.io/name: agent-mcp-reader
+rules:
+  - apiGroups: ["", "apps", "batch", "networking.k8s.io", "autoscaling"]
+    resources:
+      - pods
+      - deployments
+      - replicasets
+      - statefulsets
+      - daemonsets
+      - services
+      - endpoints
+      - configmaps
+      - namespaces
+      - nodes
+      - events
+      - jobs
+      - cronjobs
+      - ingresses
+      - persistentvolumeclaims
+    verbs: ["get", "list", "watch"]

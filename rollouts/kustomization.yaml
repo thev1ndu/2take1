@@ -8,4 +8,5 @@ resources:
   - manifests/service.yaml
   - manifests/ingress.yaml
   - manifests/deployment.yaml
+  - manifests/hpa.yaml
   # - manifests/rollout.yaml  # swap back once plain Deployment is confirmed stable

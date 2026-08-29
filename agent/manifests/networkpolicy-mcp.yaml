@@ -1,0 +1,29 @@
+# Only pods labeled app: backend inside twotakeone may reach mcp-server.
+# The backend doesn't exist yet (milestone 3+) but the policy is written now
+# so mcp-server never has an open ingress window. Per PLAN.md, mcp-server
+# holds privileged cluster read access and must only be reachable from the
+# one component that proxies Claude's tool-use calls to it.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: mcp-server-ingress
+  namespace: twotakeone
+  labels:
+    app.kubernetes.io/name: mcp-server
+spec:
+  podSelector:
+    matchLabels:
+      app: mcp-server
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: twotakeone
+          podSelector:
+            matchLabels:
+              app: backend
+      ports:
+        - protocol: TCP
+          port: 8081
