@@ -10,19 +10,19 @@ kind: Kustomization
 
 resources:
   - manifests/namespace.yaml
-  - manifests/redis-deployment.yaml
-  - manifests/redis-service.yaml
-  - manifests/networkpolicy-redis.yaml
-  - manifests/init-agent-stream-job.yaml
-  - manifests/mcp-server-deployment.yaml
-  - manifests/mcp-server-service.yaml
-  - manifests/networkpolicy-mcp-server.yaml
-  - manifests/agent-worker-deployment.yaml
-  - manifests/scaledobject-agent-worker.yaml
-  - manifests/websocket-gateway-deployment.yaml
-  - manifests/websocket-gateway-service.yaml
-  - manifests/web-deployment.yaml
-  - manifests/web-service.yaml
-  - manifests/ingress.yaml
+  # - manifests/redis-deployment.yaml
+  # - manifests/redis-service.yaml
+  # - manifests/networkpolicy-redis.yaml
+  # - manifests/init-agent-stream-job.yaml
+  # - manifests/mcp-server-deployment.yaml
+  # - manifests/mcp-server-service.yaml
+  # - manifests/networkpolicy-mcp-server.yaml
+  # - manifests/agent-worker-deployment.yaml
+  # - manifests/scaledobject-agent-worker.yaml
+  # - manifests/websocket-gateway-deployment.yaml
+  # - manifests/websocket-gateway-service.yaml
+  # - manifests/web-deployment.yaml
+  # - manifests/web-service.yaml
+  # - manifests/ingress.yaml
   # secret-anthropic.yaml (copied from secret-anthropic.example.yaml, real
   # key filled in, never committed) must be added here before applying.
