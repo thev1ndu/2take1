@@ -8,7 +8,7 @@ spec:
     matchLabels: { app: 2take1 }
   template:
     metadata:
-      labels: { app: 2take1 }
+      labels: { app: 2take1, app.kubernetes.io/name: 2take1 }
     spec:
       containers:
         - name: nginx
@@ -22,6 +22,14 @@ spec:
           resources:
             requests: { memory: "16Mi", cpu: "10m" }
             limits: { memory: "64Mi", cpu: "100m" }
+          readinessProbe:
+            httpGet: { path: /, port: 80 }
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: { path: /, port: 80 }
+            initialDelaySeconds: 5
+            periodSeconds: 10
       volumes:
         - name: html
           configMap:
