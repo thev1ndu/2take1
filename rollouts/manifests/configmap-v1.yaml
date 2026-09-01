@@ -15,6 +15,18 @@ data:
           body { background: #0b0b0b; color: #3ddc84; font-family: monospace; text-align: center; margin-top: 8vh; }
           pre { font-size: 1rem; line-height: 1.1; }
           p { letter-spacing: 0.1em; }
+          nav { margin-top: 4vh; }
+          nav a {
+            display: inline-block;
+            color: #3ddc84;
+            text-decoration: none;
+            border: 1px solid #3ddc84;
+            padding: 0.5em 1em;
+            margin: 0.3em;
+            border-radius: 4px;
+            transition: background 0.2s ease, color 0.2s ease;
+          }
+          nav a:hover { background: #3ddc84; color: #0b0b0b; }
         </style>
       </head>
       <body>
@@ -25,5 +37,12 @@ data:
     |___| |_||_||_|_|\_\___||_|
         </pre>
         <p>(v1 / stable)</p>
+        <nav>
+          <a href="https://rancher.2take1.nl">rancher</a>
+          <a href="https://harbor.2take1.nl">harbor</a>
+          <a href="https://grafana.2take1.nl">grafana</a>
+          <a href="https://argocd.2take1.nl">argocd</a>
+          <a href="https://jenkins.2take1.nl">jenkins</a>
+        </nav>
       </body>
     </html>
